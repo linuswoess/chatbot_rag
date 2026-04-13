@@ -10,12 +10,29 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-# get Groq api key by reading the first line of the text file groq.txt
+# Set page config
+st.set_page_config(page_title="Question Answering with Groq", layout="wide")
 
-with open('groq.txt') as file:
-    api_key = str(file.readline())
+# Initialize session state for API key
+if "api_key" not in st.session_state:
+    st.session_state.api_key = None
 
-os.environ['GROQ_API_KEY'] = api_key
+# Sidebar for API key input
+with st.sidebar:
+    st.title("Configuration")
+    api_key = st.text_input("Enter your Groq API Key:", type="password", key="groq_api_key_input")
+    
+    if api_key:
+        st.session_state.api_key = api_key
+        os.environ['GROQ_API_KEY'] = api_key
+        st.success("API Key configured!")
+    elif not st.session_state.api_key:
+        st.warning("Please enter your Groq API Key to proceed")
+
+# Check if API key is available before proceeding
+if not st.session_state.api_key:
+    st.error("🔑 Please enter your Groq API Key in the sidebar to use this app")
+    st.stop()
 
 # Load CSV document
 loader = CSVLoader(r'fake_startup_founders_europe.csv', encoding="latin-1")
